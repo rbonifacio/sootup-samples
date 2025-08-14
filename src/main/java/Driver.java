@@ -1,3 +1,10 @@
+import sootup.codepropertygraph.ast.AstCreator;
+import sootup.codepropertygraph.cdg.CdgCreator;
+import sootup.codepropertygraph.cfg.CfgCreator;
+import sootup.codepropertygraph.cpg.CpgCreator;
+import sootup.codepropertygraph.ddg.DdgCreator;
+import sootup.codepropertygraph.propertygraph.PropertyGraph;
+import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
 import sootup.core.graph.StmtGraph;
 import sootup.core.inputlocation.AnalysisInputLocation;
 import sootup.core.jimple.basic.Local;
@@ -10,13 +17,13 @@ import sootup.java.core.JavaSootMethod;
 import sootup.java.core.types.JavaClassType;
 import sootup.java.core.views.JavaView;
 
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
+import graph.Graph;
 
 public class Driver {
 
-    public void execute(String location, String clasz, String method) {
+    public List<Graph> execute(String location, String clasz) {
         AnalysisInputLocation inputLocation = new JavaClassPathAnalysisInputLocation(location);
         JavaView view = new JavaView(inputLocation);
         JavaClassType classType = view.getIdentifierFactory().getClassType(clasz);
@@ -24,28 +31,36 @@ public class Driver {
         Optional<JavaSootClass> optSootClass = view.getClass(classType);
         Set<JavaSootMethod> methods = optSootClass.get().getMethods();
 
+        List<Graph> graphs = new ArrayList<>();
+        
         methods.forEach(m -> {
             Body body = m.getBody();
             StmtGraph graph = body.getStmtGraph();
             Iterator<Stmt> it = graph.iterator();
 
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 Stmt s = it.next();
 
-                if(s instanceof JThrowStmt) {
-                    System.out.println(body);
-                    JThrowStmt throwStmt = (JThrowStmt)s;
-                    System.out.println("Found a throw stmt: " + throwStmt.toString());
-                    if(throwStmt.getOp() instanceof Local) {
-                        Local local = (Local)throwStmt.getOp();
-                        local.getDefsForLocalUse(graph, s).forEach(def -> System.out.println(def));
-                        System.out.println("TODO: This is not enough to find RuntimeException in the example: " + local.getType());
-                    }
+                if (s instanceof JThrowStmt) {
+                    graphs.add(buildControlPropertyGraph(m));
+                    break;
                 }
             }
-
         });
 
+        return graphs;
+    }
+
+    public Graph buildControlPropertyGraph(JavaSootMethod m) {
+        AstCreator astCreator = new AstCreator();
+        CfgCreator cfgCreator = new CfgCreator();
+        CdgCreator cdgCreator = new CdgCreator();
+        DdgCreator ddgCreator = new DdgCreator();
+
+        CpgCreator cpgCreator = new CpgCreator(astCreator, cfgCreator, cdgCreator, ddgCreator);
+
+        PropertyGraph cpg = cpgCreator.createCpg(m);
+        return Graph.fromPropertyGraph(cpg);
     }
 
 }
