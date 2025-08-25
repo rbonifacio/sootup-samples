@@ -1,13 +1,14 @@
+import graph.node.IfStatementNode;
+import graph.node.Node;
+import graph.node.ThrowStatementNode;
 import sootup.codepropertygraph.ast.AstCreator;
 import sootup.codepropertygraph.cdg.CdgCreator;
 import sootup.codepropertygraph.cfg.CfgCreator;
 import sootup.codepropertygraph.cpg.CpgCreator;
 import sootup.codepropertygraph.ddg.DdgCreator;
 import sootup.codepropertygraph.propertygraph.PropertyGraph;
-import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
 import sootup.core.graph.StmtGraph;
 import sootup.core.inputlocation.AnalysisInputLocation;
-import sootup.core.jimple.basic.Local;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 import sootup.core.jimple.common.stmt.Stmt;
 import sootup.core.model.Body;
@@ -35,18 +36,26 @@ public class Driver {
         
         methods.forEach(m -> {
             Body body = m.getBody();
-            StmtGraph graph = body.getStmtGraph();
-            Iterator<Stmt> it = graph.iterator();
+            StmtGraph<?> graph = body.getStmtGraph();
 
-            while (it.hasNext()) {
-                Stmt s = it.next();
-
+            for (Stmt s : graph) {
                 if (s instanceof JThrowStmt) {
+                    System.out.println(body);
                     graphs.add(buildControlPropertyGraph(m));
                     break;
                 }
             }
         });
+
+        List<Node> throwConditions = new ArrayList<>();
+
+        for (Graph g : graphs) {
+            List<Node> throwNodes = Graph.findThrowNodes(g);
+            for (Node throwNode : throwNodes) {
+                ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
+                throwConditions = Graph.findThrowConditions(g, tsn);
+            }
+        }
 
         return graphs;
     }
@@ -62,5 +71,4 @@ public class Driver {
         PropertyGraph cpg = cpgCreator.createCpg(m);
         return Graph.fromPropertyGraph(cpg);
     }
-
 }

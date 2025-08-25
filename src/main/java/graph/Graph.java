@@ -1,6 +1,7 @@
 package graph;
 
-import org.jgrapht.graph.DirectedWeightedPseudograph;
+import org.jgrapht.graph.DirectedPseudograph;
+import org.jgrapht.graph.EdgeReversedGraph;
 
 import graph.edge.BooleanCFGEdge;
 import graph.edge.CFGEdge;
@@ -11,6 +12,7 @@ import graph.node.IfStatementNode;
 import graph.node.Node;
 import graph.node.SimpleNode;
 import graph.node.ThrowStatementNode;
+import org.jgrapht.traverse.DepthFirstIterator;
 import sootup.codepropertygraph.propertygraph.PropertyGraph;
 import sootup.codepropertygraph.propertygraph.edges.AbstAstEdge;
 import sootup.codepropertygraph.propertygraph.edges.CdgEdge;
@@ -25,7 +27,12 @@ import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
-public class Graph extends DirectedWeightedPseudograph<Node, Edge> {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+public class Graph extends DirectedPseudograph<Node, Edge> {
 
     
     private Graph() {
@@ -77,5 +84,41 @@ public class Graph extends DirectedWeightedPseudograph<Node, Edge> {
             return new IfStatementNode(node, ifStmt.getCondition());
         }
         return new SimpleNode(node);
+    }
+
+    public static List<Node> findThrowNodes(Graph g) {
+        return g
+                .vertexSet()
+                .stream()
+                .filter(n -> n.getClass().equals(ThrowStatementNode.class)).toList();
+    }
+
+    public static List<Node> findIfStmtNodes(Graph g) {
+        return g
+                .vertexSet()
+                .stream()
+                .filter(n -> n.getClass().equals(IfStatementNode.class)).toList();
+    }
+
+    /**
+     *
+     * @param g a Graph
+     * @param t a ThrowStatementNode
+     * @return a list of IfStatementNode that have a path to t
+     */
+    public static List<Node> findThrowConditions(Graph g, ThrowStatementNode t) {
+        List <Node> throwConditions = new ArrayList<>();
+        // Not sure how costly this reversal can be at scale. Doc says there is a penalty
+        // We can easily build the reversed graph if we like
+        EdgeReversedGraph<Node, Edge> reversedGraph = new EdgeReversedGraph<>(g);
+        Iterator<Node> iterator = new DepthFirstIterator<>(reversedGraph, t);
+        while (iterator.hasNext()) {
+            Node n = iterator.next();
+            if (n instanceof IfStatementNode) {
+                throwConditions.add(n);
+            }
+        }
+
+        return throwConditions;
     }
 }
