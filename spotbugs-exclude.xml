@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude test classes from certain checks -->
+    <Match>
+        <Class name="~.*Test.*"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+    
+    <!-- Exclude generated code -->
+    <Match>
+        <Package name="~.*\.generated\..*"/>
+    </Match>
+    
+    <!-- Exclude certain patterns that might be false positives in your domain -->
+    <Match>
+        <Bug pattern="SE_BAD_FIELD"/>
+        <Class name="~.*\.Edge"/>
+    </Match>
+    
+    <!-- Suppress serialization warnings for simple data classes -->
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID"/>
+        <Class name="~.*\.(Node|Edge)"/>
+    </Match>
+    
+    <!-- Allow public fields in simple data transfer objects -->
+    <Match>
+        <Bug pattern="MS_PKGPROTECT"/>
+        <Class name="~.*\.(dto|model)\..*"/>
+    </Match>
+</FindBugsFilter> 
