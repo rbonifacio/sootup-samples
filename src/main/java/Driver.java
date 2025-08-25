@@ -18,11 +18,7 @@ import sootup.java.core.JavaSootMethod;
 import sootup.java.core.types.JavaClassType;
 import sootup.java.core.views.JavaView;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import graph.Graph;
 
@@ -85,16 +81,18 @@ public final class Driver {
      * Finds all IfStatementNode nodes that have a path to a ThrowStatementNode
      *
      * @param g the graph of a given method
+     * @return a map between ThrowStaementNode and IfStatementNode on their respective paths
      */
-    public List<Node> findThrowConditionNodes(Graph g) {
-        List<Node> throwConditionNodes = new ArrayList<>();
+    public HashMap<Node, List<Node>> findThrowConditionNodes(Graph g) {
+        HashMap<Node, List<Node>> throwConditions = new HashMap<>();
 
         List<Node> throwNodes = Graph.findThrowNodes(g);
         for (Node throwNode : throwNodes) {
             ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
-            throwConditionNodes = Graph.findThrowConditions(g, tsn);
+            List<Node> throwConditionNodes = Graph.findThrowConditions(g, tsn);
+            throwConditions.put(throwNode, throwConditionNodes);
         }
 
-        return throwConditionNodes;
+        return throwConditions;
     }
 }
