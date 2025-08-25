@@ -95,13 +95,6 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
                 .filter(n -> n.getClass().equals(ThrowStatementNode.class)).toList();
     }
 
-    public static List<Node> findIfStmtNodes(Graph g) {
-        return g
-                .vertexSet()
-                .stream()
-                .filter(n -> n.getClass().equals(IfStatementNode.class)).toList();
-    }
-
     /**
      *
      * @param g a Graph

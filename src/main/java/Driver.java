@@ -54,22 +54,11 @@ public final class Driver {
 
             for (Stmt s : graph) {
                 if (s instanceof JThrowStmt) {
-                    System.out.println(body);
                     graphs.add(buildControlPropertyGraph(m));
                     break;
                 }
             }
         });
-
-        List<Node> throwConditions = new ArrayList<>();
-
-        for (Graph g : graphs) {
-            List<Node> throwNodes = Graph.findThrowNodes(g);
-            for (Node throwNode : throwNodes) {
-                ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
-                throwConditions = Graph.findThrowConditions(g, tsn);
-            }
-        }
 
         return graphs;
     }
@@ -90,5 +79,22 @@ public final class Driver {
 
         PropertyGraph cpg = cpgCreator.createCpg(m);
         return Graph.fromPropertyGraph(cpg);
+    }
+
+    /**
+     * Finds all IfStatementNode nodes that have a path to a ThrowStatementNode
+     *
+     * @param g the graph of a given method
+     */
+    public List<Node> findThrowConditionNodes(Graph g) {
+        List<Node> throwConditionNodes = new ArrayList<>();
+
+        List<Node> throwNodes = Graph.findThrowNodes(g);
+        for (Node throwNode : throwNodes) {
+            ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
+            throwConditionNodes = Graph.findThrowConditions(g, tsn);
+        }
+
+        return throwConditionNodes;
     }
 }
