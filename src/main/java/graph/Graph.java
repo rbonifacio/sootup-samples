@@ -21,12 +21,14 @@ import sootup.codepropertygraph.propertygraph.edges.IfFalseCfgEdge;
 import sootup.codepropertygraph.propertygraph.edges.IfTrueCfgEdge;
 import sootup.codepropertygraph.propertygraph.edges.NormalCfgEdge;
 import sootup.codepropertygraph.propertygraph.edges.PropertyGraphEdge;
-import sootup.codepropertygraph.propertygraph.edges.StmtAstEdge;
 import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
 import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
+/**
+ * A graph representation for control property graphs extending JGraphT's DirectedWeightedPseudograph.
+ */
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -39,7 +41,13 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
         super(Edge.class);
     }
 
-    public static Graph fromPropertyGraph(PropertyGraph cpg) {
+    /**
+     * Creates a Graph from a PropertyGraph.
+     *
+     * @param cpg the property graph to convert
+     * @return the converted graph
+     */
+    public static Graph fromPropertyGraph(final PropertyGraph cpg) {
         Graph graph = new Graph();
         
         for (PropertyGraphEdge edge : cpg.getEdges()) {
@@ -55,20 +63,15 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
             
             if (edge instanceof DdgEdge) {
                 graph.addEdge(source, target, new DataDependencyEdge(edge));
-            }
-            else if (edge instanceof CdgEdge) {
+            } else if (edge instanceof CdgEdge) {
                 graph.addEdge(source, target, new ControlDependencyEdge(edge));
-            }
-            else if (edge instanceof IfTrueCfgEdge) {
+            } else if (edge instanceof IfTrueCfgEdge) {
                 graph.addEdge(source, target, new BooleanCFGEdge(edge, true));
-            }
-            else if (edge instanceof IfFalseCfgEdge) {
+            } else if (edge instanceof IfFalseCfgEdge) {
                 graph.addEdge(source, target, new BooleanCFGEdge(edge, false));
-            }
-            else if (edge instanceof NormalCfgEdge)     {
+            } else if (edge instanceof NormalCfgEdge) {
                 graph.addEdge(source, target, new CFGEdge(edge));
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Unknown edge type: " + edge.getClass().getName());
             }
         }
@@ -76,11 +79,10 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
         return graph;
     }
 
-    private static Node createNode(PropertyGraphNode node) {
+    private static Node createNode(final PropertyGraphNode node) {
         if (node instanceof StmtGraphNode stmt && stmt.getStmt() instanceof JThrowStmt throwStmt) {
             return new ThrowStatementNode(node, throwStmt.getOp());
-        }
-        else if (node instanceof StmtGraphNode stmt && stmt.getStmt() instanceof JIfStmt ifStmt) {
+        } else if (node instanceof StmtGraphNode stmt && stmt.getStmt() instanceof JIfStmt ifStmt) {
             return new IfStatementNode(node, ifStmt.getCondition());
         }
         return new SimpleNode(node);
