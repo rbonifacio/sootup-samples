@@ -1,3 +1,6 @@
+import graph.node.IfStatementNode;
+import graph.node.Node;
+import graph.node.ThrowStatementNode;
 import sootup.codepropertygraph.ast.AstCreator;
 import sootup.codepropertygraph.cdg.CdgCreator;
 import sootup.codepropertygraph.cfg.CfgCreator;
@@ -15,11 +18,7 @@ import sootup.java.core.JavaSootMethod;
 import sootup.java.core.types.JavaClassType;
 import sootup.java.core.views.JavaView;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import graph.Graph;
 
@@ -47,12 +46,9 @@ public final class Driver {
         
         methods.forEach(m -> {
             Body body = m.getBody();
-            StmtGraph graph = body.getStmtGraph();
-            Iterator<Stmt> it = graph.iterator();
+            StmtGraph<?> graph = body.getStmtGraph();
 
-            while (it.hasNext()) {
-                Stmt s = it.next();
-
+            for (Stmt s : graph) {
                 if (s instanceof JThrowStmt) {
                     graphs.add(buildControlPropertyGraph(m));
                     break;
@@ -81,4 +77,22 @@ public final class Driver {
         return Graph.fromPropertyGraph(cpg);
     }
 
+    /**
+     * Finds all IfStatementNode nodes that have a path to a ThrowStatementNode
+     *
+     * @param g the graph of a given method
+     * @return a map between ThrowStaementNode and IfStatementNode on their respective paths
+     */
+    public HashMap<Node, List<Node>> findThrowConditionNodes(Graph g) {
+        HashMap<Node, List<Node>> throwConditions = new HashMap<>();
+
+        List<Node> throwNodes = Graph.findThrowNodes(g);
+        for (Node throwNode : throwNodes) {
+            ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
+            List<Node> throwConditionNodes = Graph.findThrowConditions(g, tsn);
+            throwConditions.put(throwNode, throwConditionNodes);
+        }
+
+        return throwConditions;
+    }
 }
