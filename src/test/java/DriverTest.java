@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import graph.node.Node;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import graph.Graph;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DriverTest {
     Path projectRoot = Paths.get(System.getProperty("user.dir"));

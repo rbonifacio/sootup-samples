@@ -30,7 +30,7 @@ import sootup.core.jimple.common.stmt.JThrowStmt;
  * A graph representation for control property graphs extending JGraphT's DirectedWeightedPseudograph.
  */
 import java.util.ArrayList;
-import java.util.Collections;
+//import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -115,5 +115,17 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
         }
 
         return throwConditions;
+    }
+
+    /**
+     * Visualise input CPG. Saves
+     * @param cpg a ControlPropertyGraph
+     */
+    public static void toSvg(final PropertyGraph cpg) {
+
+    }
+
+    public static void toSvg(final Graph graph) {
+
     }
 }
