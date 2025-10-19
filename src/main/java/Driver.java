@@ -26,15 +26,14 @@ import witupgraph.WITUpGraph;
  * Driver class for creating control property graphs from Java methods containing throw statements.
  */
 public final class Driver {
-
     /**
      * Executes the analysis on the specified class and returns graphs for methods with throw statements.
      *
      * @param location the location of the class to analyze
      * @param clasz the name of the class to analyze
-     * @return list of control property graphs
+     * @return Hash map where keys are methods' full names and values are the graphs
      */
-    public List<WITUpGraph> execute(final String location, final String clasz) {
+    public HashMap<String, WITUpGraph> buildCPGForThrowingMethods(final String location, final String clasz) {
         AnalysisInputLocation inputLocation = new JavaClassPathAnalysisInputLocation(location);
         JavaView view = new JavaView(inputLocation);
         JavaClassType classType = view.getIdentifierFactory().getClassType(clasz);
@@ -42,7 +41,7 @@ public final class Driver {
         Optional<JavaSootClass> optSootClass = view.getClass(classType);
         Set<JavaSootMethod> methods = optSootClass.get().getMethods();
 
-        List<WITUpGraph> graphs = new ArrayList<>();
+        HashMap<String, WITUpGraph> graphs = new HashMap<>();
         
         methods.forEach(m -> {
             Body body = m.getBody();
@@ -50,7 +49,7 @@ public final class Driver {
 
             for (Stmt s : graph) {
                 if (s instanceof JThrowStmt) {
-                    graphs.add(buildControlPropertyGraph(m));
+                    graphs.put(m.getSignature().toString(), buildCodePropertyGraph(m));
                     break;
                 }
             }
@@ -60,12 +59,12 @@ public final class Driver {
     }
 
     /**
-     * Builds a control property graph for the given method.
+     * Builds a code property graph for the given method.
      *
      * @param m the method to analyze
-     * @return the control property graph
+     * @return the code property graph
      */
-    public WITUpGraph buildControlPropertyGraph(final JavaSootMethod m) {
+    public WITUpGraph buildCodePropertyGraph(final JavaSootMethod m) {
         AstCreator astCreator = new AstCreator();
         CfgCreator cfgCreator = new CfgCreator();
         CdgCreator cdgCreator = new CdgCreator();
@@ -89,7 +88,7 @@ public final class Driver {
         List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(g);
         for (WITUpNode throwNode : throwNodes) {
             ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
-            List<WITUpNode> throwConditionNodes = WITUpGraph.findThrowConditions(g, tsn);
+            List<WITUpNode> throwConditionNodes = WITUpGraph.findConditionNodesInThrowPath(g, tsn);
             throwConditions.put(throwNode, throwConditionNodes);
         }
 

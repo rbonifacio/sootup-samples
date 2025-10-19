@@ -54,7 +54,7 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
      */
     public static WITUpGraph fromPropertyGraph(final PropertyGraph cpg) {
         WITUpGraph graph = new WITUpGraph();
-        
+
         for (PropertyGraphEdge edge : cpg.getEdges()) {
 
             if (edge instanceof AbstAstEdge) {
@@ -106,8 +106,8 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
      * @param t a ThrowStatementNode
      * @return a list of IfStatementNode that have a path to t
      */
-    public static List<WITUpNode> findThrowConditions(WITUpGraph g, ThrowStatementNode t) {
-        List <WITUpNode> throwConditions = new ArrayList<>();
+    public static List<WITUpNode> findConditionNodesInThrowPath(WITUpGraph g, ThrowStatementNode t) {
+        List <WITUpNode> throwConditionNodes = new ArrayList<>();
         // Not sure how costly this reversal can be at scale. Doc says there is a penalty
         // We can easily build the reversed graph if we like
         EdgeReversedGraph<WITUpNode, WITUpEdge> reversedGraph = new EdgeReversedGraph<>(g);
@@ -115,10 +115,10 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
         while (iterator.hasNext()) {
             WITUpNode n = iterator.next();
             if (n instanceof IfStatementNode) {
-                throwConditions.add(n);
+                throwConditionNodes.add(n);
             }
         }
 
-        return throwConditions;
+        return throwConditionNodes;
     }
 }
