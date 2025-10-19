@@ -1,17 +1,17 @@
-package graph;
+package witupgraph;
 
 import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.EdgeReversedGraph;
 
-import graph.edge.BooleanCFGEdge;
-import graph.edge.CFGEdge;
-import graph.edge.ControlDependencyEdge;
-import graph.edge.DataDependencyEdge;
-import graph.edge.Edge;
-import graph.node.IfStatementNode;
-import graph.node.Node;
-import graph.node.SimpleNode;
-import graph.node.ThrowStatementNode;
+import witupgraph.witupedge.BooleanCFGEdge;
+import witupgraph.witupedge.CFGEdge;
+import witupgraph.witupedge.ControlDependencyEdge;
+import witupgraph.witupedge.DataDependencyEdge;
+import witupgraph.witupedge.WITUpEdge;
+import witupgraph.witupnode.IfStatementNode;
+import witupgraph.witupnode.WITUpNode;
+import witupgraph.witupnode.SimpleNode;
+import witupgraph.witupnode.ThrowStatementNode;
 import org.jgrapht.traverse.DepthFirstIterator;
 import sootup.codepropertygraph.propertygraph.PropertyGraph;
 import sootup.codepropertygraph.propertygraph.edges.AbstAstEdge;
@@ -26,29 +26,34 @@ import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
-/**
- * A graph representation for control property graphs extending JGraphT's DirectedWeightedPseudograph.
- */
 import java.util.ArrayList;
-//import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class Graph extends DirectedPseudograph<Node, Edge> {
+/**
+ * A graph representation for control property graphs extending JGraphT's DirectedPseudograph.
+ */
+public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
 
     
-    private Graph() {
-        super(Edge.class);
+    private WITUpGraph() {
+        super(WITUpEdge.class);
     }
 
     /**
-     * Creates a Graph from a PropertyGraph.
+     * Creates a WITUpGraph from <a href="https://soot-oss.github.io/SootUp/v2.0.0/codepropertygraphs/">SootUp's</a>
+     * PropertyGraph type.
      *
-     * @param cpg the property graph to convert
-     * @return the converted graph
+     * @param cpg the PropertyGraph to convert
+     * @return the converted WITUpGraph
      */
-    public static Graph fromPropertyGraph(final PropertyGraph cpg) {
-        Graph graph = new Graph();
+    /*
+    This couples WITUpGraph with SootUp. If we are ever going to process multiple languages, then
+    we are going to need to decide whether to couple the Java frontend to SootUp or to add a
+    serialisation layer before creating the WITUpGraph
+     */
+    public static WITUpGraph fromPropertyGraph(final PropertyGraph cpg) {
+        WITUpGraph graph = new WITUpGraph();
         
         for (PropertyGraphEdge edge : cpg.getEdges()) {
 
@@ -56,8 +61,8 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
                 continue;
             }
             
-            Node source = createNode(edge.getSource());
-            Node target = createNode(edge.getDestination());
+            WITUpNode source = createNode(edge.getSource());
+            WITUpNode target = createNode(edge.getDestination());
             graph.addVertex(source);
             graph.addVertex(target);
             
@@ -79,7 +84,7 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
         return graph;
     }
 
-    private static Node createNode(final PropertyGraphNode node) {
+    private static WITUpNode createNode(final PropertyGraphNode node) {
         if (node instanceof StmtGraphNode stmt && stmt.getStmt() instanceof JThrowStmt throwStmt) {
             return new ThrowStatementNode(node, throwStmt.getOp());
         } else if (node instanceof StmtGraphNode stmt && stmt.getStmt() instanceof JIfStmt ifStmt) {
@@ -88,7 +93,7 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
         return new SimpleNode(node);
     }
 
-    public static List<Node> findThrowNodes(Graph g) {
+    public static List<WITUpNode> findThrowNodes(WITUpGraph g) {
         return g
                 .vertexSet()
                 .stream()
@@ -101,31 +106,19 @@ public class Graph extends DirectedPseudograph<Node, Edge> {
      * @param t a ThrowStatementNode
      * @return a list of IfStatementNode that have a path to t
      */
-    public static List<Node> findThrowConditions(Graph g, ThrowStatementNode t) {
-        List <Node> throwConditions = new ArrayList<>();
+    public static List<WITUpNode> findThrowConditions(WITUpGraph g, ThrowStatementNode t) {
+        List <WITUpNode> throwConditions = new ArrayList<>();
         // Not sure how costly this reversal can be at scale. Doc says there is a penalty
         // We can easily build the reversed graph if we like
-        EdgeReversedGraph<Node, Edge> reversedGraph = new EdgeReversedGraph<>(g);
-        Iterator<Node> iterator = new DepthFirstIterator<>(reversedGraph, t);
+        EdgeReversedGraph<WITUpNode, WITUpEdge> reversedGraph = new EdgeReversedGraph<>(g);
+        Iterator<WITUpNode> iterator = new DepthFirstIterator<>(reversedGraph, t);
         while (iterator.hasNext()) {
-            Node n = iterator.next();
+            WITUpNode n = iterator.next();
             if (n instanceof IfStatementNode) {
                 throwConditions.add(n);
             }
         }
 
         return throwConditions;
-    }
-
-    /**
-     * Visualise input CPG. Saves
-     * @param cpg a ControlPropertyGraph
-     */
-    public static void toSvg(final PropertyGraph cpg) {
-
-    }
-
-    public static void toSvg(final Graph graph) {
-
     }
 }

@@ -1,21 +1,21 @@
-package graph.edge;
+package witupgraph.witupedge;
 
 import java.util.Objects;
 
 import sootup.codepropertygraph.propertygraph.edges.PropertyGraphEdge;
 
 /**
- * Abstract base class for graph edges.
+ * Abstract base class for WITUpGraph edges. Wraps SootUp PropertyGraphEdge type
  */
-public abstract class Edge {
-    private PropertyGraphEdge edge;
+public abstract class WITUpEdge {
+    private final PropertyGraphEdge edge;
 
     /**
-     * Constructor for Edge.
+     * Constructor for WITUpEdge.
      *
      * @param edge the property graph edge
      */
-    public Edge(final PropertyGraphEdge edge) {
+    public WITUpEdge(final PropertyGraphEdge edge) {
       this.edge = edge;
     }
 
@@ -36,7 +36,7 @@ public abstract class Edge {
     if (o == null || getClass() != o.getClass()) {
         return false;
     }
-    Edge otherEdge = (Edge) o;
+    WITUpEdge otherEdge = (WITUpEdge) o;
     return Objects.equals(this.edge, otherEdge.edge);
    }
    

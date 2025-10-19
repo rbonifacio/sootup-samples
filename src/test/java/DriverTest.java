@@ -3,10 +3,10 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 
-import graph.node.Node;
+import witupgraph.witupnode.WITUpNode;
 import org.junit.jupiter.api.Test;
 
-import graph.Graph;
+import witupgraph.WITUpGraph;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,7 +17,7 @@ public class DriverTest {
     @Test
     public void buildJimple() {
         Driver driver = new Driver();
-        List<Graph> graphs = driver.execute(testClassesDir.toString(), "br.unb.cic.samples.Math");
+        List<WITUpGraph> graphs = driver.execute(testClassesDir.toString(), "br.unb.cic.samples.Math");
         assertNotNull(graphs);
         assertEquals(1, graphs.size());
     }
@@ -25,12 +25,12 @@ public class DriverTest {
     @Test
     public void findExceptionConditionNodes() {
         Driver driver = new Driver();
-        List<Graph> graphs = driver.execute(testClassesDir.toString(), "br.unb.cic.samples.Math");
+        List<WITUpGraph> graphs = driver.execute(testClassesDir.toString(), "br.unb.cic.samples.Math");
         assertNotNull(graphs);
         assertEquals(1, graphs.size());
-        List<Node> throwNodes = Graph.findThrowNodes(graphs.get(0));
+        List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(graphs.get(0));
         assertEquals(1, throwNodes.size());
-        HashMap<Node, List<Node>> throwConditions = driver.findThrowConditionNodes(graphs.get(0));
+        HashMap<WITUpNode, List<WITUpNode>> throwConditions = driver.findThrowConditionNodes(graphs.get(0));
         assertEquals(1, throwConditions.size());
         assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
     }

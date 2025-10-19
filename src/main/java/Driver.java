@@ -1,6 +1,6 @@
 //import graph.node.IfStatementNode;
-import graph.node.Node;
-import graph.node.ThrowStatementNode;
+import witupgraph.witupnode.WITUpNode;
+import witupgraph.witupnode.ThrowStatementNode;
 import sootup.codepropertygraph.ast.AstCreator;
 import sootup.codepropertygraph.cdg.CdgCreator;
 import sootup.codepropertygraph.cfg.CfgCreator;
@@ -20,7 +20,7 @@ import sootup.java.core.views.JavaView;
 
 import java.util.*;
 
-import graph.Graph;
+import witupgraph.WITUpGraph;
 
 /**
  * Driver class for creating control property graphs from Java methods containing throw statements.
@@ -34,7 +34,7 @@ public final class Driver {
      * @param clasz the name of the class to analyze
      * @return list of control property graphs
      */
-    public List<Graph> execute(final String location, final String clasz) {
+    public List<WITUpGraph> execute(final String location, final String clasz) {
         AnalysisInputLocation inputLocation = new JavaClassPathAnalysisInputLocation(location);
         JavaView view = new JavaView(inputLocation);
         JavaClassType classType = view.getIdentifierFactory().getClassType(clasz);
@@ -42,7 +42,7 @@ public final class Driver {
         Optional<JavaSootClass> optSootClass = view.getClass(classType);
         Set<JavaSootMethod> methods = optSootClass.get().getMethods();
 
-        List<Graph> graphs = new ArrayList<>();
+        List<WITUpGraph> graphs = new ArrayList<>();
         
         methods.forEach(m -> {
             Body body = m.getBody();
@@ -65,7 +65,7 @@ public final class Driver {
      * @param m the method to analyze
      * @return the control property graph
      */
-    public Graph buildControlPropertyGraph(final JavaSootMethod m) {
+    public WITUpGraph buildControlPropertyGraph(final JavaSootMethod m) {
         AstCreator astCreator = new AstCreator();
         CfgCreator cfgCreator = new CfgCreator();
         CdgCreator cdgCreator = new CdgCreator();
@@ -74,7 +74,7 @@ public final class Driver {
         CpgCreator cpgCreator = new CpgCreator(astCreator, cfgCreator, cdgCreator, ddgCreator);
 
         PropertyGraph cpg = cpgCreator.createCpg(m);
-        return Graph.fromPropertyGraph(cpg);
+        return WITUpGraph.fromPropertyGraph(cpg);
     }
 
     /**
@@ -83,13 +83,13 @@ public final class Driver {
      * @param g the graph of a given method
      * @return a map between ThrowStaementNode and IfStatementNode on their respective paths
      */
-    public HashMap<Node, List<Node>> findThrowConditionNodes(Graph g) {
-        HashMap<Node, List<Node>> throwConditions = new HashMap<>();
+    public HashMap<WITUpNode, List<WITUpNode>> findThrowConditionNodes(WITUpGraph g) {
+        HashMap<WITUpNode, List<WITUpNode>> throwConditions = new HashMap<>();
 
-        List<Node> throwNodes = Graph.findThrowNodes(g);
-        for (Node throwNode : throwNodes) {
+        List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(g);
+        for (WITUpNode throwNode : throwNodes) {
             ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
-            List<Node> throwConditionNodes = Graph.findThrowConditions(g, tsn);
+            List<WITUpNode> throwConditionNodes = WITUpGraph.findThrowConditions(g, tsn);
             throwConditions.put(throwNode, throwConditionNodes);
         }
 

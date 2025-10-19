@@ -1,4 +1,4 @@
-package graph.node;
+package witupgraph.witupnode;
 
 import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
 import sootup.core.jimple.basic.Immediate;
@@ -6,9 +6,9 @@ import sootup.core.jimple.basic.Immediate;
 /**
  * A node representing a throw statement.
  */
-public class ThrowStatementNode extends Node {
+public class ThrowStatementNode extends WITUpNode {
 
-    private Immediate throwExpr;
+    private final Immediate throwExpr;
     
     /**
      * Constructor for ThrowStatementNode.

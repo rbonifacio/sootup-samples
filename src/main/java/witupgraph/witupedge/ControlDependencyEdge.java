@@ -1,11 +1,11 @@
-package graph.edge;
+package witupgraph.witupedge;
 
 import sootup.codepropertygraph.propertygraph.edges.PropertyGraphEdge;
 
 /**
  * Control dependency edge.
  */
-public class ControlDependencyEdge extends Edge {
+public class ControlDependencyEdge extends WITUpEdge {
 
     /**
      * Constructor for ControlDependencyEdge.

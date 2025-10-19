@@ -1,11 +1,11 @@
-package graph.edge;
+package witupgraph.witupedge;
 
 import sootup.codepropertygraph.propertygraph.edges.PropertyGraphEdge;
 
 /**
  * Control flow graph edge.
  */
-public class CFGEdge extends Edge {
+public class CFGEdge extends WITUpEdge {
 
     /**
      * Constructor for CFGEdge.

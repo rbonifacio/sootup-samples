@@ -1,4 +1,4 @@
-package graph.node;
+package witupgraph.witupnode;
 
 import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
 import sootup.core.jimple.common.expr.AbstractConditionExpr;
@@ -6,14 +6,14 @@ import sootup.core.jimple.common.expr.AbstractConditionExpr;
 /**
  * A node representing an if statement.
  */
-public class IfStatementNode extends Node {
-    private AbstractConditionExpr condition;
+public class IfStatementNode extends WITUpNode {
+    private final AbstractConditionExpr condition;
 
     /**
      * Constructor for IfStatementNode.
      *
-     * @param node the property graph node
-     * @param condition the condition expression
+     * @param node a property graph node
+     * @param condition the condition expression evaluated by the node
      */
     public IfStatementNode(final PropertyGraphNode node, final AbstractConditionExpr condition) {
         super(node);
