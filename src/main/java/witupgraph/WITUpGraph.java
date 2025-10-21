@@ -109,7 +109,7 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
     public static List<WITUpNode> findConditionNodesInThrowPath(WITUpGraph g, ThrowStatementNode t) {
         List <WITUpNode> throwConditionNodes = new ArrayList<>();
         // Not sure how costly this reversal can be at scale. Doc says there is a penalty
-        // We can easily build the reversed graph if we like
+        // We can build the reversed graph if we need
         EdgeReversedGraph<WITUpNode, WITUpEdge> reversedGraph = new EdgeReversedGraph<>(g);
         Iterator<WITUpNode> iterator = new DepthFirstIterator<>(reversedGraph, t);
         while (iterator.hasNext()) {

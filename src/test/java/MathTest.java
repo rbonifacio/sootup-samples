@@ -39,7 +39,6 @@ public class MathTest {
         assertEquals(1, throwConditions.size());
         assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
         IfStatementNode ifNode = (IfStatementNode) throwConditions.get(throwNodes.get(0)).get(0);
-        System.out.println("The complement of " + ifNode.getCondition() + " makes int div(int,int) throw");
     }
 
     @Test
@@ -53,7 +52,6 @@ public class MathTest {
         assertEquals(1, throwConditions.size());
         assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
         IfStatementNode ifNode = (IfStatementNode) throwConditions.get(throwNodes.get(0)).get(0);
-        System.out.println("The complement of " + ifNode.getCondition() + " makes double circleArea() throw");
     }
 
     @Test
@@ -68,7 +66,6 @@ public class MathTest {
         assertEquals(2, throwConditions.get(throwNodes.get(0)).size());
         for (WITUpNode n: throwConditions.get(throwNodes.get(0))) {
             IfStatementNode ifNode = (IfStatementNode) n;
-            System.out.println(ifNode.getCondition());
         }
     }
 }
