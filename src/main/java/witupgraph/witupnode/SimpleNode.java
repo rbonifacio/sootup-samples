@@ -1,11 +1,11 @@
-package graph.node;
+package witupgraph.witupnode;
 
 import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
 
 /**
  * A simple node implementation for basic graph nodes.
  */
-public class SimpleNode extends Node {
+public class SimpleNode extends WITUpNode {
 
     /**
      * Constructor for SimpleNode.

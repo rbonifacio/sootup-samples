@@ -1,21 +1,21 @@
-package graph.node;
+package witupgraph.witupnode;
 
 import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
 
 import java.util.Objects;
 
 /**
- * Abstract base class for graph nodes.
+ * Abstract base class for WITUpGraph nodes.
  */
-public abstract class Node {
-    private PropertyGraphNode node;
+public abstract class WITUpNode {
+    private final PropertyGraphNode node;
 
     /**
-     * Constructor for Node.
+     * Constructor for WITUpNode.
      *
-     * @param node the property graph node
+     * @param node a SootUp PropertyGraphNode
      */
-    public Node(final PropertyGraphNode node) {
+    public WITUpNode(final PropertyGraphNode node) {
         this.node = node;
     }
 
@@ -27,7 +27,7 @@ public abstract class Node {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Node node1 = (Node) o;
+        WITUpNode node1 = (WITUpNode) o;
         return Objects.equals(node, node1.node);
     }
 

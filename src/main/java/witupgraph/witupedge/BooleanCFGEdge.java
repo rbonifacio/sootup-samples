@@ -1,4 +1,4 @@
-package graph.edge;
+package witupgraph.witupedge;
 
 import java.util.Objects;
 
@@ -8,8 +8,7 @@ import sootup.codepropertygraph.propertygraph.edges.PropertyGraphEdge;
  * A control flow graph edge with a boolean condition.
  */
 public class BooleanCFGEdge extends CFGEdge {
-
-    private boolean condition;
+    private final boolean condition;
     
     /**
      * Constructor for BooleanCFGEdge.

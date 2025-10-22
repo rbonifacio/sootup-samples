@@ -2,7 +2,7 @@
 <FindBugsFilter>
     <!-- Include main source code packages -->
     <Match>
-        <Package name="~graph\..*"/>
+        <Package name="~witupgraph\..*"/>
     </Match>
     
     <!-- Include your main Driver class -->
