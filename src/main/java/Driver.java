@@ -1,4 +1,6 @@
 //import graph.node.IfStatementNode;
+import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
 import witupgraph.witupnode.WITUpNode;
 import witupgraph.witupnode.ThrowStatementNode;
 import sootup.codepropertygraph.ast.AstCreator;
@@ -18,6 +20,8 @@ import sootup.java.core.JavaSootMethod;
 import sootup.java.core.types.JavaClassType;
 import sootup.java.core.views.JavaView;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import witupgraph.WITUpGraph;
@@ -49,6 +53,7 @@ public final class Driver {
 
             for (Stmt s : graph) {
                 if (s instanceof JThrowStmt) {
+                    System.out.println(m.getBody());
                     graphs.put(m.getSignature().toString(), buildCodePropertyGraph(m));
                     break;
                 }
@@ -73,25 +78,16 @@ public final class Driver {
         CpgCreator cpgCreator = new CpgCreator(astCreator, cfgCreator, cdgCreator, ddgCreator);
 
         PropertyGraph cpg = cpgCreator.createCpg(m);
-        return WITUpGraph.fromPropertyGraph(cpg);
-    }
+        String dotGraph = cpg.toDotGraph();
 
-    /**
-     * Finds all IfStatementNode nodes that have a path to a ThrowStatementNode
-     *
-     * @param g the graph of a given method
-     * @return a map between ThrowStaementNode and IfStatementNode on their respective paths
-     */
-    public HashMap<WITUpNode, List<WITUpNode>> findThrowConditionNodes(WITUpGraph g) {
-        HashMap<WITUpNode, List<WITUpNode>> throwConditions = new HashMap<>();
-
-        List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(g);
-        for (WITUpNode throwNode : throwNodes) {
-            ThrowStatementNode tsn = (ThrowStatementNode) throwNode;
-            List<WITUpNode> throwConditionNodes = WITUpGraph.findConditionNodesInThrowPath(g, tsn);
-            throwConditions.put(throwNode, throwConditionNodes);
+        try {
+            Graphviz.fromString(dotGraph)
+                    .render(Format.SVG)
+                    .toFile(new File(m.getName() + "graph.svg"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
-        return throwConditions;
+        return WITUpGraph.fromPropertyGraph(cpg);
     }
 }

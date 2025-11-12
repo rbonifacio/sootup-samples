@@ -27,6 +27,7 @@ import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,7 +57,6 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
         WITUpGraph graph = new WITUpGraph();
 
         for (PropertyGraphEdge edge : cpg.getEdges()) {
-
             if (edge instanceof AbstAstEdge) {
                 continue;
             }
@@ -102,11 +102,11 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
 
     /**
      *
-     * @param g a Graph
+     * @param g a WITUpGraph
      * @param t a ThrowStatementNode
      * @return a list of IfStatementNode that have a path to t
      */
-    public static List<WITUpNode> findConditionNodesInThrowPath(WITUpGraph g, ThrowStatementNode t) {
+    public static List<WITUpNode> findConditionNodes(WITUpGraph g, ThrowStatementNode t) {
         List <WITUpNode> throwConditionNodes = new ArrayList<>();
         // Not sure how costly this reversal can be at scale. Doc says there is a penalty
         // We can build the reversed graph if we need
@@ -120,5 +120,26 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
         }
 
         return throwConditionNodes;
+    }
+    
+    /**
+     * For each ThrowStatementNode, finds all IfStatementNode nodes that have
+     * a path to it.
+     *
+     * @param g the WITUpGraph of a given method
+     * @param throwNodes a list of throw nodes in that graph
+     *
+     * @return a map between ThrowStaementNode and IfStatementNode on their respective paths
+     */
+    public static HashMap<WITUpNode, List<WITUpNode>> findThrowConditions(WITUpGraph g, List<WITUpNode> throwNodes) {
+        HashMap<WITUpNode, List<WITUpNode>> conditionSets = new HashMap<>();
+
+        for (WITUpNode tn : throwNodes) {
+            ThrowStatementNode tsn = (ThrowStatementNode) tn;
+            List<WITUpNode> throwConditionNodes = WITUpGraph.findConditionNodes(g, tsn);
+            conditionSets.put(tn, throwConditionNodes);
+        }
+
+        return conditionSets;
     }
 }
