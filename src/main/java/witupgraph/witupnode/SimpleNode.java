@@ -6,7 +6,7 @@ import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
  * A simple node implementation for basic graph nodes.
  */
 public class SimpleNode extends WITUpNode {
-
+    PropertyGraphNode node;
     /**
      * Constructor for SimpleNode.
      *
@@ -14,6 +14,11 @@ public class SimpleNode extends WITUpNode {
      */
     public SimpleNode(final PropertyGraphNode node) {
         super(node);
+        this.node = node;
+    }
+
+    public PropertyGraphNode getNode() {
+        return this.node;
     }
 
 }

@@ -25,7 +25,7 @@ public class Math {
         return x / y;
     }
 
-    public double probability(double p) {
+    public double probability(int p) {
         if (p < 0 || p > 1) {
             throw new RuntimeException("probability is out of bounds");
         }

@@ -1,5 +1,6 @@
 package witupgraph;
 
+import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.EdgeReversedGraph;
 
@@ -13,6 +14,7 @@ import witupgraph.witupnode.WITUpNode;
 import witupgraph.witupnode.SimpleNode;
 import witupgraph.witupnode.ThrowStatementNode;
 import org.jgrapht.traverse.DepthFirstIterator;
+import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import sootup.codepropertygraph.propertygraph.PropertyGraph;
 import sootup.codepropertygraph.propertygraph.edges.AbstAstEdge;
 import sootup.codepropertygraph.propertygraph.edges.CdgEdge;
@@ -26,10 +28,8 @@ import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A graph representation for control property graphs extending JGraphT's DirectedPseudograph.
@@ -141,5 +141,51 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
         }
 
         return conditionSets;
+    }
+
+    public static List<List<BooleanCFGEdge>> findPathsToTrow(WITUpGraph g, WITUpNode throwNode, WITUpNode throwConditionNode) {
+        Optional<WITUpNode> entryNode = g.vertexSet().stream()
+                .filter(n -> g.incomingEdgesOf(n).stream()
+                        .noneMatch(e -> e instanceof CFGEdge || e instanceof BooleanCFGEdge))
+                .findFirst();
+
+        WITUpNode entry = entryNode.orElseThrow(() ->
+                new RuntimeException("No entry node found")
+        );
+
+        System.out.println("entryNode");
+        if (entry instanceof SimpleNode ) {
+            System.out.println("SimpleNode");
+            System.out.println(((SimpleNode) entry).getNode());
+        }
+
+        AllDirectedPaths<WITUpNode, WITUpEdge> allPaths = new AllDirectedPaths<>(g);
+        List<GraphPath<WITUpNode, WITUpEdge>> throwPaths = allPaths.getAllPaths(entry, throwNode, true, null);
+        // We essentially only care about CFG edges when determining the paths. The other edges only create noise/redundant paths
+//        List<GraphPath<WITUpNode, WITUpEdge>> pathsWithConditions = throwPaths
+//                .stream()
+//                .filter(p -> p.getEdgeList().stream().noneMatch(e -> e instanceof DataDependencyEdge))
+//                .filter(p -> p.getEdgeList().stream().noneMatch(e -> e instanceof ControlDependencyEdge))
+//                .filter(p -> p.getVertexList().stream().anyMatch(v -> v instanceof IfStatementNode))
+//                .toList();
+
+        List<GraphPath<WITUpNode, WITUpEdge>> pathsWithConditions = throwPaths.stream()
+                .filter(p -> p.getEdgeList()
+                        .stream()
+                        .noneMatch(e ->
+                                e instanceof DataDependencyEdge || e instanceof ControlDependencyEdge)
+                        && p.getVertexList().stream().anyMatch(v -> v instanceof IfStatementNode)
+                )
+                .toList();
+
+        List<List<BooleanCFGEdge>> pathConditions = pathsWithConditions.stream()
+                .map(p -> p.getEdgeList().stream()
+                        .filter(e -> e instanceof BooleanCFGEdge)
+                        .map(e -> (BooleanCFGEdge) e)
+                        .toList()
+                )
+                .toList();
+
+        return pathConditions;
     }
 }
