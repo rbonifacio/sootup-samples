@@ -94,7 +94,7 @@ public class MathTest {
         System.out.println("probability: number of unique paths: " + conditionPaths.length());
         System.out.println(conditionPaths);
 
-        ProcessBuilder pb = new ProcessBuilder("python", "../symsolver/symsolver.py");
+        ProcessBuilder pb = new ProcessBuilder("python", "./src/scripts//symsolver.py");
         try {
             Process process = pb.start();
             // Send JSONArray to Python via stdin

@@ -1,5 +1,5 @@
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
+//import guru.nidi.graphviz.engine.Format;
+//import guru.nidi.graphviz.engine.Graphviz;
 import sootup.codepropertygraph.ast.AstCreator;
 import sootup.codepropertygraph.cdg.CdgCreator;
 import sootup.codepropertygraph.cfg.CfgCreator;
@@ -17,8 +17,8 @@ import sootup.java.core.JavaSootMethod;
 import sootup.java.core.types.JavaClassType;
 import sootup.java.core.views.JavaView;
 
-import java.io.File;
-import java.io.IOException;
+//import java.io.File;
+//import java.io.IOException;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -79,13 +79,13 @@ public final class Driver {
         PropertyGraph cpg = cpgCreator.createCpg(m);
         String dotGraph = cpg.toDotGraph();
 
-        try {
-            Graphviz.fromString(dotGraph)
-                    .render(Format.SVG)
-                    .toFile(new File(m.getName() + "graph.svg"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            Graphviz.fromString(dotGraph)
+//                    .render(Format.SVG)
+//                    .toFile(new File(m.getName() + "graph.svg"));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 
         return WITUpGraph.fromPropertyGraph(cpg);
     }
