@@ -8,6 +8,7 @@ import sootup.core.jimple.common.expr.AbstractConditionExpr;
  */
 public class IfStatementNode extends WITUpNode {
     private final AbstractConditionExpr condition;
+    private final PropertyGraphNode node;
 
     /**
      * Constructor for IfStatementNode.
@@ -18,6 +19,7 @@ public class IfStatementNode extends WITUpNode {
     public IfStatementNode(final PropertyGraphNode node, final AbstractConditionExpr condition) {
         super(node);
         this.condition = condition;
+        this.node = node;
     }
 
     /**
@@ -29,4 +31,7 @@ public class IfStatementNode extends WITUpNode {
         return condition;
     }
 
+    public PropertyGraphNode getNode() {
+        return this.node;
+    }
 }

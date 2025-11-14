@@ -1,9 +1,17 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 
-import witupgraph.witupnode.IfStatementNode;
+import org.json.JSONArray;
+//import org.junit.jupiter.api.Disabled;
+//import witupgraph.witupedge.BooleanCFGEdge;
+import witupgraph.witupnode.ThrowStatementNode;
 import witupgraph.witupnode.WITUpNode;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +35,6 @@ public class MathTest {
         assertEquals(3, graphs.size());
     }
 
-
     @Test
     public void findDivThrowNodes() {
         Driver driver = new Driver();
@@ -35,10 +42,13 @@ public class MathTest {
         WITUpGraph g = graphs.get("<br.unb.cic.samples.Math: int div(int,int)>");
         List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(g);
         assertEquals(1, throwNodes.size());
-        HashMap<WITUpNode, List<WITUpNode>> throwConditions = driver.findThrowConditionNodes(g);
-        assertEquals(1, throwConditions.size());
-        assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
-        IfStatementNode ifNode = (IfStatementNode) throwConditions.get(throwNodes.get(0)).get(0);
+
+        List<WITUpNode> conditionNodes = WITUpGraph.findConditionNodes(g, (ThrowStatementNode) throwNodes.get(0));
+        assertEquals(1, conditionNodes.size());
+
+        JSONArray paths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
+        System.out.println("div: number of unique paths: " + paths.length());
+        System.out.println(paths);
     }
 
     @Test
@@ -48,24 +58,52 @@ public class MathTest {
         WITUpGraph g = graphs.get("<br.unb.cic.samples.Math: double circleArea()>");
         List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(g);
         assertEquals(1, throwNodes.size());
-        HashMap<WITUpNode, List<WITUpNode>> throwConditions = driver.findThrowConditionNodes(g);
-        assertEquals(1, throwConditions.size());
-        assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
-        IfStatementNode ifNode = (IfStatementNode) throwConditions.get(throwNodes.get(0)).get(0);
+
+        List<WITUpNode> conditionNodes = WITUpGraph.findConditionNodes(g, (ThrowStatementNode) throwNodes.get(0));
+        assertEquals(1, conditionNodes.size());
+
+        JSONArray paths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
+        System.out.println("circle: number of unique paths: " + paths.length());
+        System.out.println(paths);
     }
 
     @Test
-    public void findProbabilityThrowNodes() {
+    public void findProbabilityThrowConditions() {
         Driver driver = new Driver();
         HashMap<String, WITUpGraph> graphs = driver.buildCPGForThrowingMethods(testClassesDir.toString(), "br.unb.cic.samples.Math");
-        WITUpGraph g = graphs.get("<br.unb.cic.samples.Math: double probability(double)>");
+        WITUpGraph g = graphs.get("<br.unb.cic.samples.Math: double probability(int)>");
         List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(g);
         assertEquals(1, throwNodes.size());
-        HashMap<WITUpNode, List<WITUpNode>> throwConditions = driver.findThrowConditionNodes(g);
-        assertEquals(1, throwConditions.size());
-        assertEquals(2, throwConditions.get(throwNodes.get(0)).size());
-        for (WITUpNode n: throwConditions.get(throwNodes.get(0))) {
-            IfStatementNode ifNode = (IfStatementNode) n;
+
+        List<WITUpNode> throwConditionNodes = WITUpGraph.findConditionNodes(g, (ThrowStatementNode) throwNodes.get(0));
+        assertEquals(2, throwConditionNodes.size());
+
+        JSONArray conditionPaths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
+        System.out.println("probability: number of unique paths: " + conditionPaths.length());
+        System.out.println(conditionPaths);
+
+        ProcessBuilder pb = new ProcessBuilder("python", "./src/scripts//symsolver.py");
+        try {
+            Process process = pb.start();
+            // Send JSONArray to Python via stdin
+            try (OutputStream os = process.getOutputStream()) {
+                os.write(conditionPaths.toString().getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+
+            // Read Python output (assume single-line JSON)
+            String result;
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                result = br.readLine();
+            }
+
+            process.waitFor();
+
+            System.out.println("Python returned: " + result);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
+
     }
 }
