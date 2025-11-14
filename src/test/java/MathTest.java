@@ -74,7 +74,7 @@ public class MathTest {
     }
 
     @Test
-    public void findProbabilityThrowNodes() {
+    public void findProbabilityThrowConditions() {
         Driver driver = new Driver();
         HashMap<String, WITUpGraph> graphs = driver.buildCPGForThrowingMethods(testClassesDir.toString(), "br.unb.cic.samples.Math");
         WITUpGraph g = graphs.get("<br.unb.cic.samples.Math: double probability(int)>");
