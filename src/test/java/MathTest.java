@@ -100,7 +100,8 @@ public class MathTest {
 
             process.waitFor();
 
-            System.out.println("SymPy to z3 yields back: " + result);
+            System.out.println("concrete throw conditions " + result);
+            System.out.println();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
