@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.json.JSONArray;
-import org.junit.jupiter.api.Disabled;
-import witupgraph.witupedge.BooleanCFGEdge;
+//import org.junit.jupiter.api.Disabled;
+//import witupgraph.witupedge.BooleanCFGEdge;
 import witupgraph.witupnode.ThrowStatementNode;
 import witupgraph.witupnode.WITUpNode;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,6 @@ public class MathTest {
     FIXME: Right now all this test changes whenever we alter the source code
      of Math. There will be as many graphs as there are methods that throw.
      */
-    @Disabled
     @Test
     public void findGraphsForMethodsThatThrow() {
         Driver driver = new Driver();
@@ -36,7 +35,6 @@ public class MathTest {
         assertEquals(3, graphs.size());
     }
 
-    @Disabled
     @Test
     public void findDivThrowNodes() {
         Driver driver = new Driver();
@@ -56,7 +54,6 @@ public class MathTest {
         System.out.println(paths);
     }
 
-    @Disabled
     @Test
     public void findCircleAreaThrowNodes() {
         Driver driver = new Driver();
@@ -113,9 +110,7 @@ public class MathTest {
             process.waitFor();
 
             System.out.println("Python returned: " + result);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
