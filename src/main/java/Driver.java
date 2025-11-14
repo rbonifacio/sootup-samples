@@ -1,8 +1,5 @@
-//import graph.node.IfStatementNode;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
-import witupgraph.witupnode.WITUpNode;
-import witupgraph.witupnode.ThrowStatementNode;
 import sootup.codepropertygraph.ast.AstCreator;
 import sootup.codepropertygraph.cdg.CdgCreator;
 import sootup.codepropertygraph.cfg.CfgCreator;
@@ -22,7 +19,9 @@ import sootup.java.core.views.JavaView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.Set;
 
 import witupgraph.WITUpGraph;
 
@@ -53,7 +52,7 @@ public final class Driver {
 
             for (Stmt s : graph) {
                 if (s instanceof JThrowStmt) {
-                    System.out.println(m.getBody());
+//                    System.out.println(m.getBody());
                     graphs.put(m.getSignature().toString(), buildCodePropertyGraph(m));
                     break;
                 }

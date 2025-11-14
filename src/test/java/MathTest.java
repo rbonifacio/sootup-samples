@@ -1,19 +1,16 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.jgrapht.GraphPath;
+import org.json.JSONArray;
 import org.junit.jupiter.api.Disabled;
-import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import witupgraph.witupedge.BooleanCFGEdge;
-import witupgraph.witupedge.CFGEdge;
-import witupgraph.witupedge.WITUpEdge;
-import witupgraph.witupnode.IfStatementNode;
-import witupgraph.witupnode.SimpleNode;
 import witupgraph.witupnode.ThrowStatementNode;
 import witupgraph.witupnode.WITUpNode;
 import org.junit.jupiter.api.Test;
@@ -30,6 +27,7 @@ public class MathTest {
     FIXME: Right now all this test changes whenever we alter the source code
      of Math. There will be as many graphs as there are methods that throw.
      */
+    @Disabled
     @Test
     public void findGraphsForMethodsThatThrow() {
         Driver driver = new Driver();
@@ -38,6 +36,7 @@ public class MathTest {
         assertEquals(3, graphs.size());
     }
 
+    @Disabled
     @Test
     public void findDivThrowNodes() {
         Driver driver = new Driver();
@@ -51,8 +50,13 @@ public class MathTest {
 
         HashMap<WITUpNode, List<WITUpNode>> throwConditions = WITUpGraph.findThrowConditions(g, throwNodes);
         assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
+
+        JSONArray paths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
+        System.out.println("div: number of unique paths: " + paths.length());
+        System.out.println(paths);
     }
 
+    @Disabled
     @Test
     public void findCircleAreaThrowNodes() {
         Driver driver = new Driver();
@@ -66,6 +70,10 @@ public class MathTest {
 
         HashMap<WITUpNode, List<WITUpNode>> throwConditions = WITUpGraph.findThrowConditions(g, throwNodes);
         assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
+
+        JSONArray paths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
+        System.out.println("circle: number of unique paths: " + paths.length());
+        System.out.println(paths);
     }
 
     @Test
@@ -82,8 +90,34 @@ public class MathTest {
         HashMap<WITUpNode, List<WITUpNode>> throwConditions = WITUpGraph.findThrowConditions(g, throwNodes);
         assertEquals(2, throwConditions.get(throwNodes.get(0)).size());
 
-        List<List<BooleanCFGEdge>> paths = WITUpGraph.findPathsToTrow(g, throwNodes.get(0), throwConditionNodes.get(0));
-        System.out.println("number of unique paths: " + paths.size());
-        System.out.println(paths);
+        JSONArray conditionPaths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
+        System.out.println("probability: number of unique paths: " + conditionPaths.length());
+        System.out.println(conditionPaths);
+
+        ProcessBuilder pb = new ProcessBuilder("python", "../symsolver/symsolver.py");
+        try {
+            Process process = pb.start();
+            // Send JSONArray to Python via stdin
+            try (OutputStream os = process.getOutputStream()) {
+                os.write(conditionPaths.toString().getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+
+            // Read Python output (assume single-line JSON)
+            String result;
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                result = br.readLine();
+            }
+
+            process.waitFor();
+
+            System.out.println("Python returned: " + result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

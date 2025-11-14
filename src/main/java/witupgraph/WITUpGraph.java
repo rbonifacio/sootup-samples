@@ -4,6 +4,8 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.EdgeReversedGraph;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import witupgraph.witupedge.BooleanCFGEdge;
 import witupgraph.witupedge.CFGEdge;
 import witupgraph.witupedge.ControlDependencyEdge;
@@ -28,13 +30,18 @@ import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A graph representation for control property graphs extending JGraphT's DirectedPseudograph.
  */
-public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
+public final class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
 
     
     private WITUpGraph() {
@@ -93,7 +100,7 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
         return new SimpleNode(node);
     }
 
-    public static List<WITUpNode> findThrowNodes(WITUpGraph g) {
+    public static List<WITUpNode> findThrowNodes(final WITUpGraph g) {
         return g
                 .vertexSet()
                 .stream()
@@ -106,8 +113,8 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
      * @param t a ThrowStatementNode
      * @return a list of IfStatementNode that have a path to t
      */
-    public static List<WITUpNode> findConditionNodes(WITUpGraph g, ThrowStatementNode t) {
-        List <WITUpNode> throwConditionNodes = new ArrayList<>();
+    public static List<WITUpNode> findConditionNodes(final WITUpGraph g, final ThrowStatementNode t) {
+        List<WITUpNode> throwConditionNodes = new ArrayList<>();
         // Not sure how costly this reversal can be at scale. Doc says there is a penalty
         // We can build the reversed graph if we need
         EdgeReversedGraph<WITUpNode, WITUpEdge> reversedGraph = new EdgeReversedGraph<>(g);
@@ -131,7 +138,9 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
      *
      * @return a map between ThrowStaementNode and IfStatementNode on their respective paths
      */
-    public static HashMap<WITUpNode, List<WITUpNode>> findThrowConditions(WITUpGraph g, List<WITUpNode> throwNodes) {
+    public static HashMap<WITUpNode, List<WITUpNode>> findThrowConditions(
+            final WITUpGraph g,
+            final List<WITUpNode> throwNodes) {
         HashMap<WITUpNode, List<WITUpNode>> conditionSets = new HashMap<>();
 
         for (WITUpNode tn : throwNodes) {
@@ -143,7 +152,7 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
         return conditionSets;
     }
 
-    public static List<List<BooleanCFGEdge>> findPathsToTrow(WITUpGraph g, WITUpNode throwNode, WITUpNode throwConditionNode) {
+    public static JSONArray findConditionPathsThatThrow(final WITUpGraph g, final List<WITUpNode> throwNodes) {
         Optional<WITUpNode> entryNode = g.vertexSet().stream()
                 .filter(n -> g.incomingEdgesOf(n).stream()
                         .noneMatch(e -> e instanceof CFGEdge || e instanceof BooleanCFGEdge))
@@ -152,24 +161,14 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
         WITUpNode entry = entryNode.orElseThrow(() ->
                 new RuntimeException("No entry node found")
         );
-
-        System.out.println("entryNode");
-        if (entry instanceof SimpleNode ) {
-            System.out.println("SimpleNode");
-            System.out.println(((SimpleNode) entry).getNode());
-        }
-
+        
         AllDirectedPaths<WITUpNode, WITUpEdge> allPaths = new AllDirectedPaths<>(g);
-        List<GraphPath<WITUpNode, WITUpEdge>> throwPaths = allPaths.getAllPaths(entry, throwNode, true, null);
-        // We essentially only care about CFG edges when determining the paths. The other edges only create noise/redundant paths
-//        List<GraphPath<WITUpNode, WITUpEdge>> pathsWithConditions = throwPaths
-//                .stream()
-//                .filter(p -> p.getEdgeList().stream().noneMatch(e -> e instanceof DataDependencyEdge))
-//                .filter(p -> p.getEdgeList().stream().noneMatch(e -> e instanceof ControlDependencyEdge))
-//                .filter(p -> p.getVertexList().stream().anyMatch(v -> v instanceof IfStatementNode))
-//                .toList();
+        List<GraphPath<WITUpNode, WITUpEdge>> throwPaths = allPaths
+                .getAllPaths(Set.of(entry), new HashSet<>(throwNodes), true, null);
 
-        List<GraphPath<WITUpNode, WITUpEdge>> pathsWithConditions = throwPaths.stream()
+        // We essentially only care about CFG edges when determining the paths. The other edges only create
+        // noise/redundant paths
+        List<GraphPath<WITUpNode, WITUpEdge>> pathsWithIfStatements = throwPaths.stream()
                 .filter(p -> p.getEdgeList()
                         .stream()
                         .noneMatch(e ->
@@ -178,7 +177,7 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
                 )
                 .toList();
 
-        List<List<BooleanCFGEdge>> pathConditions = pathsWithConditions.stream()
+        List<List<BooleanCFGEdge>> throwConditionsPaths = pathsWithIfStatements.stream()
                 .map(p -> p.getEdgeList().stream()
                         .filter(e -> e instanceof BooleanCFGEdge)
                         .map(e -> (BooleanCFGEdge) e)
@@ -186,6 +185,22 @@ public class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
                 )
                 .toList();
 
-        return pathConditions;
+
+        JSONArray allPathsConditions = new JSONArray();
+
+        for (List<BooleanCFGEdge> throwConditionsPath : throwConditionsPaths) {
+            JSONArray pathConditions = new JSONArray();
+            for (BooleanCFGEdge throwConditionsEdge : throwConditionsPath) {
+                JSONObject c = new JSONObject();
+                c.put("truthValue",  throwConditionsEdge.getCondition());
+                StmtGraphNode stmt = (StmtGraphNode) throwConditionsEdge.getEdge().getSource();
+                JIfStmt ifStmt = (JIfStmt) stmt.getStmt();
+                c.put("conditionStmt", ifStmt.getCondition());
+                pathConditions.put(c);
+            }
+            allPathsConditions.put(pathConditions);
+        }
+
+        return allPathsConditions;
     }
 }

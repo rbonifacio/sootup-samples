@@ -1,7 +1,6 @@
 package witupgraph.witupnode;
 
 import sootup.codepropertygraph.propertygraph.nodes.PropertyGraphNode;
-import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import sootup.core.jimple.common.expr.AbstractConditionExpr;
 
 /**
