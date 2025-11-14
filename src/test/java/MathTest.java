@@ -71,7 +71,8 @@ public class MathTest {
     public void findProbabilityThrowConditions() {
         Driver driver = new Driver();
         HashMap<String, WITUpGraph> graphs = driver.buildCPGForThrowingMethods(testClassesDir.toString(), "br.unb.cic.samples.Math");
-        WITUpGraph g = graphs.get("<br.unb.cic.samples.Math: double probability(int)>");
+        String methodFQN = "<br.unb.cic.samples.Math: double probability(int)>";
+        WITUpGraph g = graphs.get(methodFQN);
         List<WITUpNode> throwNodes = WITUpGraph.findThrowNodes(g);
         assertEquals(1, throwNodes.size());
 
@@ -100,8 +101,8 @@ public class MathTest {
 
             process.waitFor();
 
+            System.out.println(methodFQN);
             System.out.println("concrete throw conditions " + result);
-            System.out.println();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
