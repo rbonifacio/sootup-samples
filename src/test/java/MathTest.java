@@ -100,7 +100,7 @@ public class MathTest {
 
             process.waitFor();
 
-            System.out.println("Python returned: " + result);
+            System.out.println("SymPy to z3 yields back: " + result);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
