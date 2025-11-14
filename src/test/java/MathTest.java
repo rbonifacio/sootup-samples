@@ -46,9 +46,6 @@ public class MathTest {
         List<WITUpNode> conditionNodes = WITUpGraph.findConditionNodes(g, (ThrowStatementNode) throwNodes.get(0));
         assertEquals(1, conditionNodes.size());
 
-        HashMap<WITUpNode, List<WITUpNode>> throwConditions = WITUpGraph.findThrowConditions(g, throwNodes);
-        assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
-
         JSONArray paths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
         System.out.println("div: number of unique paths: " + paths.length());
         System.out.println(paths);
@@ -65,9 +62,6 @@ public class MathTest {
         List<WITUpNode> conditionNodes = WITUpGraph.findConditionNodes(g, (ThrowStatementNode) throwNodes.get(0));
         assertEquals(1, conditionNodes.size());
 
-        HashMap<WITUpNode, List<WITUpNode>> throwConditions = WITUpGraph.findThrowConditions(g, throwNodes);
-        assertEquals(1, throwConditions.get(throwNodes.get(0)).size());
-
         JSONArray paths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
         System.out.println("circle: number of unique paths: " + paths.length());
         System.out.println(paths);
@@ -83,9 +77,6 @@ public class MathTest {
 
         List<WITUpNode> throwConditionNodes = WITUpGraph.findConditionNodes(g, (ThrowStatementNode) throwNodes.get(0));
         assertEquals(2, throwConditionNodes.size());
-
-        HashMap<WITUpNode, List<WITUpNode>> throwConditions = WITUpGraph.findThrowConditions(g, throwNodes);
-        assertEquals(2, throwConditions.get(throwNodes.get(0)).size());
 
         JSONArray conditionPaths = WITUpGraph.findConditionPathsThatThrow(g, throwNodes);
         System.out.println("probability: number of unique paths: " + conditionPaths.length());

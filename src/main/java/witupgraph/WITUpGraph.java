@@ -31,7 +31,6 @@ import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -128,30 +127,15 @@ public final class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> 
 
         return throwConditionNodes;
     }
-    
+
     /**
-     * For each ThrowStatementNode, finds all IfStatementNode nodes that have
-     * a path to it.
      *
-     * @param g the WITUpGraph of a given method
-     * @param throwNodes a list of throw nodes in that graph
-     *
-     * @return a map between ThrowStaementNode and IfStatementNode on their respective paths
+     * @param g an instance of WITUpGraph for a method
+     * @param throwNodes nodes that correspondd to a Throw statement
+     * @return A JSONArray like
+     * [{"truthValue":false,"conditionStmt":"p < 0"},{"truthValue":false,"conditionStmt":"p <= 1"}]
+     * i.e., the statement in text form and the truth value that must be satisfied.
      */
-    public static HashMap<WITUpNode, List<WITUpNode>> findThrowConditions(
-            final WITUpGraph g,
-            final List<WITUpNode> throwNodes) {
-        HashMap<WITUpNode, List<WITUpNode>> conditionSets = new HashMap<>();
-
-        for (WITUpNode tn : throwNodes) {
-            ThrowStatementNode tsn = (ThrowStatementNode) tn;
-            List<WITUpNode> throwConditionNodes = WITUpGraph.findConditionNodes(g, tsn);
-            conditionSets.put(tn, throwConditionNodes);
-        }
-
-        return conditionSets;
-    }
-
     public static JSONArray findConditionPathsThatThrow(final WITUpGraph g, final List<WITUpNode> throwNodes) {
         Optional<WITUpNode> entryNode = g.vertexSet().stream()
                 .filter(n -> g.incomingEdgesOf(n).stream()
