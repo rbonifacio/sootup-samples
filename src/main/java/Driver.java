@@ -52,8 +52,34 @@ public final class Driver {
 
             for (Stmt s : graph) {
                 if (s instanceof JThrowStmt) {
-//                    System.out.println(m.getBody());
+                    System.out.println(m.getBody());
                     graphs.put(m.getSignature().toString(), buildCodePropertyGraph(m));
+                    break;
+                }
+            }
+        });
+
+        return graphs;
+    }
+
+    public HashMap<String, WITUpGraph> buildDDGForThrowingMethods(final String location, final String clasz) {
+        AnalysisInputLocation inputLocation = new JavaClassPathAnalysisInputLocation(location);
+        JavaView view = new JavaView(inputLocation);
+        JavaClassType classType = view.getIdentifierFactory().getClassType(clasz);
+
+        Optional<JavaSootClass> optSootClass = view.getClass(classType);
+        Set<JavaSootMethod> methods = optSootClass.get().getMethods();
+
+        HashMap<String, WITUpGraph> graphs = new HashMap<>();
+
+        methods.forEach(m -> {
+            Body body = m.getBody();
+            StmtGraph<?> graph = body.getStmtGraph();
+
+            for (Stmt s : graph) {
+                if (s instanceof JThrowStmt) {
+//                    System.out.println(m.getBody());
+                    graphs.put(m.getSignature().toString(), buildDataDependencyGraph(m));
                     break;
                 }
             }
@@ -88,5 +114,25 @@ public final class Driver {
 //        }
 
         return WITUpGraph.fromPropertyGraph(cpg);
+    }
+
+    public WITUpGraph buildDataDependencyGraph(final JavaSootMethod m) {
+        DdgCreator ddgCreator = new DdgCreator();
+
+
+
+        PropertyGraph ddg = ddgCreator.createGraph(m);
+
+        String dotGraph = ddg.toDotGraph();
+
+//        try {
+//            Graphviz.fromString(dotGraph)
+//                    .render(Format.SVG)
+//                    .toFile(new File(m.getName() + "graph.svg"));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        return WITUpGraph.fromPropertyGraph(ddg);
     }
 }

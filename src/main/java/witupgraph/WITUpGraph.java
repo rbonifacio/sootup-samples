@@ -6,6 +6,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import sootup.core.jimple.common.stmt.JIdentityStmt;
 import witupgraph.witupedge.BooleanCFGEdge;
 import witupgraph.witupedge.CFGEdge;
 import witupgraph.witupedge.ControlDependencyEdge;
@@ -30,19 +31,18 @@ import sootup.codepropertygraph.propertygraph.nodes.StmtGraphNode;
 import sootup.core.jimple.common.stmt.JIfStmt;
 import sootup.core.jimple.common.stmt.JThrowStmt;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * A graph representation for control property graphs extending JGraphT's DirectedPseudograph.
  */
 public final class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> {
+    WITUpNode first;
 
-    
+    public WITUpNode getFirstNode() {
+        return this.first;
+    }
+
     private WITUpGraph() {
         super(WITUpEdge.class);
     }
@@ -168,6 +168,9 @@ public final class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> 
                         .toList()
                 )
                 .toList();
+        // need to grab the source node of these edges and trace them back in the DDG
+        // coming close to having everything we need, will then need to sort out the order
+        // and how to optimise/write proper code
 
 
         JSONArray allPathsConditions = new JSONArray();
@@ -186,5 +189,42 @@ public final class WITUpGraph extends DirectedPseudograph<WITUpNode, WITUpEdge> 
         }
 
         return allPathsConditions;
+    }
+
+    public static boolean sameConditionNode(WITUpNode lhs, WITUpNode rhs) {
+        StmtGraphNode lhsNode = (StmtGraphNode) lhs.getNode();
+        StmtGraphNode rhsNode = (StmtGraphNode) rhs.getNode();
+
+        if (!(lhsNode.getStmt() instanceof JIfStmt lhsIf)) return false;
+        if (!(rhsNode.getStmt() instanceof JIfStmt rhsIf)) return false;
+
+        // Smells to compare strings here but we have no equals() that works atm
+        return lhsIf.getCondition().equivTo(rhsIf.getCondition());
+    }
+
+    public static void traceConditionNodes(final WITUpGraph cpg, final WITUpGraph ddg, final WITUpNode conditionNode) {
+        List<WITUpNode> entryNodes = ddg.vertexSet().stream()
+                .filter(n -> ddg.incomingEdgesOf(n).isEmpty()).toList();
+
+        Optional<WITUpNode> ddgNode =
+                ddg.vertexSet().stream()
+                        .filter(n -> sameConditionNode(n, conditionNode))
+                        .findFirst();
+
+        WITUpNode ddgConditionNode = ddgNode.orElseThrow(() ->
+                new RuntimeException("DDG node does not have a counterpart to CPG node")
+        );
+
+        AllDirectedPaths<WITUpNode, WITUpEdge> adp = new AllDirectedPaths<>(ddg);
+        List<GraphPath<WITUpNode, WITUpEdge>> allPaths = adp
+                .getAllPaths(new HashSet<>(entryNodes), Set.of(ddgConditionNode), true, null);
+
+        GraphPath<WITUpNode, WITUpEdge> path = allPaths.stream()
+                        .filter(p -> !p.getEdgeList().isEmpty()).toList().get(0);
+        // ignore the identity statement for now. In the edges of the CPG, find a BooleanCFGEdge one leaving
+        // the condition node on its way to throw
+        //
+
+        System.out.println(allPaths);
     }
 }

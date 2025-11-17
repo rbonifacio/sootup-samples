@@ -35,4 +35,8 @@ public abstract class WITUpNode {
     public int hashCode() {
         return Objects.hash(node);
     }
+
+    public PropertyGraphNode getNode() {
+        return node;
+    }
 }
