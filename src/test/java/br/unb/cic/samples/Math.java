@@ -13,7 +13,7 @@ public class Math {
 
     public double circleArea() {
         if (this.radius < 0) {
-            throw new RuntimeException("Radius must be positive");
+            throw new RuntimeException("Radius cannot be negative");
         }
         return pi * this.radius * this.radius;
     }
